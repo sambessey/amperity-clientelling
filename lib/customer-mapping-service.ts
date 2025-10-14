@@ -1,8 +1,9 @@
 /**
  * Customer ID Mapping Loader
  * 
- * Loads customer friendly ID to Amperity ID mappings from a centralized GitHub JSON file.
- * This allows multiple projects to share the same customer mappings.
+ * Loads customer friendly ID to Amperity ID mappings from a local API endpoint.
+ * The API serves mappings from the local customer-mappings.json file or falls back to GitHub.
+ * This avoids CORS issues when fetching directly from GitHub in the browser.
  */
 
 interface CustomerMappings {
@@ -22,7 +23,7 @@ class CustomerMappingService {
   private isLoading = false
   
   // Configuration
-  private readonly GITHUB_RAW_URL = 'https://raw.githubusercontent.com/sambessey/amperity-clientelling/main/customer-mappings.json'
+  private readonly API_URL = '/api/customer-mappings'
   private readonly CACHE_DURATION_MS = 5 * 60 * 1000 // 5 minutes
   private readonly FALLBACK_MAPPINGS: Record<string, string> = {
     // Fallback mappings in case GitHub is unreachable
@@ -57,11 +58,11 @@ class CustomerMappingService {
   }
 
   /**
-   * Force reload mappings from GitHub
+   * Force reload mappings from API
    */
   async reloadMappings(): Promise<void> {
     this.lastLoaded = null
-    await this.loadMappingsFromGitHub()
+    await this.loadMappingsFromAPI()
   }
 
   /**
@@ -73,23 +74,23 @@ class CustomerMappingService {
       (now.getTime() - this.lastLoaded.getTime()) > this.CACHE_DURATION_MS
 
     if (needsRefresh && !this.isLoading) {
-      await this.loadMappingsFromGitHub()
+      await this.loadMappingsFromAPI()
     }
   }
 
   /**
-   * Load mappings from GitHub with fallback
+   * Load mappings from API with fallback
    */
-  private async loadMappingsFromGitHub(): Promise<void> {
+  private async loadMappingsFromAPI(): Promise<void> {
     if (this.isLoading) return
     
     this.isLoading = true
     
     try {
-      console.log('🔄 Loading customer mappings from GitHub...')
+      console.log('🔄 Loading customer mappings from API...')
       
       // Add cache busting timestamp
-      const cacheBustUrl = `${this.GITHUB_RAW_URL}?t=${Date.now()}`
+      const cacheBustUrl = `${this.API_URL}?t=${Date.now()}`
       
       const response = await fetch(cacheBustUrl, {
         headers: {
@@ -101,24 +102,26 @@ class CustomerMappingService {
       })
 
       if (!response.ok) {
-        throw new Error(`GitHub fetch failed: ${response.status} ${response.statusText}`)
+        throw new Error(`API fetch failed: ${response.status} ${response.statusText}`)
       }
 
-      const data: CustomerMappings = await response.json()
+      const apiResponse = await response.json()
       
-      if (!data.mappings || typeof data.mappings !== 'object') {
-        throw new Error('Invalid mappings format from GitHub')
+      if (!apiResponse.success || !apiResponse.data?.mappings) {
+        throw new Error('Invalid mappings format from API')
       }
 
+      const data = apiResponse.data
       this.mappings = data.mappings
       this.lastLoaded = new Date()
 
-      console.log(`✅ Loaded ${Object.keys(this.mappings).length} customer mappings from GitHub`)
+      console.log(`✅ Loaded ${Object.keys(this.mappings).length} customer mappings from API`)
       console.log(`📅 Version: ${data.version}`)
+      console.log(`🔗 Source: ${apiResponse.source}`)
       console.log(`👤 Updated by: ${data.metadata?.updated_by}`)
 
     } catch (error) {
-      console.error('❌ Failed to load mappings from GitHub:', error)
+      console.error('❌ Failed to load mappings from API:', error)
       
       // Fall back to local mappings if we don't have any cached
       if (Object.keys(this.mappings).length === 0) {
