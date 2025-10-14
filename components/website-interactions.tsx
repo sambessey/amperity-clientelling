@@ -7,63 +7,10 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { MousePointer, Eye, ShoppingCart, Clock, Globe, Heart, TrendingUp, Calendar, RefreshCw, Play, Pause } from "lucide-react"
+import { customerMappingService } from "@/lib/customer-mapping-service"
 
-// Friendly ID to Amperity ID mapping
-// UPDATE THIS MAPPING: Replace the placeholder Amperity IDs with real ones from your system
-// Usage: /dashboard?id=martinh will map to Amperity ID and call the real API
-// Format: 'friendlyname': 'real-amperity-uuid-here'
-const CUSTOMER_ID_MAPPING: Record<string, string> = {
-  'martinh': '00cf575b-4b03-34c1-acfe-49c6f5cbeb25',        // Martin Hansen
-  'sarahj': '05483448-a958-3335-b521-aea5f3a82f3a',         // Sarah Johnson
-  'miket': '0551df4d-a090-3d6e-b22d-83683d8ba6ff',          // Mike Thompson
-  'emilyr': '22ef797d-6d25-56e3-cfff-6be8f7edf447',         // Emily Rodriguez
-  'davidw': '33fg8a8e-7e36-67f4-d000-7cf9f8fef558',        // David Wilson
-  'lisac': '05219129-6927-3734-a67c-c63c0642d429',         // Lisa Chen
-  'johnm': '55hi0cag-9g58-89h6-f222-9e1bgahgh77a',         // John Martinez
-  'jennyk': '66ij1dbh-ah69-9ai7-g333-af2chbhih88b',        // Jenny Kim
-  'robertp': '77jk2eci-bi7a-abj8-h444-bg3diciji99c',       // Robert Phillips
-  'mariab': '88kl3fdj-cj8b-bck9-i555-ch4ejdjka0ad',        // Maria Brown
-  'chriss': '99lm4gek-dk9c-cdla-j666-di5fkeclb1be',        // Chris Smith
-  'amandah': 'aaln5hfl-el0d-demb-k777-ej6glfmmc2cf',       // Amanda Harris
-  'stevenr': 'bbmo6igm-fm1e-efnc-l888-fk7hmgnnd3dg',       // Steven Roberts
-  'jessican': 'ccnp7jhn-gn2f-fgod-m999-gl8inhope4eh',      // Jessica Nelson
-  'brandonl': 'ddoq8kio-ho3g-ghpe-naaa-hm9joipqf5fi',      // Brandon Lewis
-  'ashleyt': 'eepр9ljp-ip4h-hiqf-obbb-in0kpjqrg6gj',       // Ashley Taylor
-  'kylem': 'ffqs0mkq-jq5i-ijrg-pccc-jo1lqkrsh7hk',         // Kyle Miller
-  'rachelw': 'ggrt1nlr-kr6j-jksh-qddd-kp2mrlsti8il',       // Rachel Wright
-  'nathanc': 'hhsu2oms-ls7k-klti-reed-lq3nsmtuj9jm',       // Nathan Cooper
-  'laurad': 'iitv3pnt-mt8l-lmuj-sfee-mr4otnuvkaкn',        // Laura Davis
-  'alexm': 'jjuw4qou-nu9m-mnvk-tgff-ns5puovwlblo',         // Alex Moore
-  'kimberlys': 'kkvx5rpv-ov0n-nowl-uhgg-ot6qvpwxmcmp',     // Kimberly Scott
-  'josephb': 'llwy6sqw-pw1o-opxm-vihh-pu7rwqxyndnq',       // Joseph Bell
-  'nicolep': 'mmxz7trx-qx2p-pqyn-wjii-qv8sxryzoer',        // Nicole Parker
-  'ryang': 'nnyya8usy-ry3q-qrzo-xkjj-rw9tysaZpfs',         // Ryan Garcia
-  'meganf': 'oozzb9vtz-sz4r-rsap-ylkk-sx0uztrbqgt',         // Megan Foster
-  'aarond': 'ppac0wua-ta5s-stbq-zmll-ty1vauscrhu',          // Aaron Davis
-  'stephaniej': 'qqbd1xvb-ub6t-tucr-anmm-uz2wbvtdsiv',     // Stephanie Jones
-  'kevinp': 'rrce2ywc-vc7u-uvds-bonn-va3xcwuetjw',         // Kevin Peterson
-  'tiffanyk': 'ssdf3zxd-wd8v-vwet-cpoo-wb4ydxvfukx',       // Tiffany King
-  'jamesh': 'tteg40ye-xe9w-wxfu-dqpp-xc5zeywgvly',          // James Hughes
-  'catherinem': 'uufh51zf-yf0x-xygv-erqq-yd6afzxhwmz',     // Catherine Murphy
-  'danielr': 'vvgi62ag-zg1y-yzhw-fsrr-ze7bgayixna',        // Daniel Rivera
-  'michellel': 'wwhj73bh-ah2z-zaix-gtss-af8chbzjyob',      // Michelle Lee
-  'brianw': 'xxik84ci-bi30-abjy-hutt-bg9dicakzpc',         // Brian White
-  'angelam': 'yyjl95dj-cj41-bckz-ivuu-ch0ejdblaqd',        // Angela Martinez
-  'gregoryb': 'aaklnb7f-el63-demb-kxww-ej2glfqnccf',      // Gregory Baker
-  'heatherc': 'bblmoc8g-fm74-efnc-lyxx-fk3hmgorddg',      // Heather Collins
-  'scottj': 'ccmnpd9h-gn85-fgod-mzyy-gl4inhoseleh',       // Scott Jackson
-  'lindas': 'ddnoqeai-ho96-ghpe-nazz-hm5joipfaafi',       // Linda Stewart
-  'timothyg': 'eepofbjp-ip07-hiag-oabb-in6kpjqrog7j',     // Timothy Green
-  'rebeccah': 'ffqpgckq-jq18-ijbh-pbcc-jo7lqkrspn8k',     // Rebecca Hall
-  'anthonyk': 'ggrqhdlr-kr29-jkci-qcdd-kp8mrlstqi9l',     // Anthony King
-  'melissal': 'hhsriems-ls3a-kldr-rded-lq9nsmtujaam',     // Melissa Lopez
-  'joshuam': 'iittfjnt-mt4b-lmek-sefe-mr0otnuvkbbn',      // Joshua Martin
-  'samanthan': 'jjuugkou-nu5c-mnfl-tfff-ns1puovwlcco',    // Samantha Nelson
-  'adamr': 'kkvvhlpv-ov6d-nogm-uggg-ot2qvpwxmddp',        // Adam Rodriguez
-  'jennifers': 'llwwimqw-pw7e-ophn-vhhh-pu3rwqxyneeq',    // Jennifer Smith
-  'matthewt': 'mmxxjnrx-qx8f-pqio-wiii-qv4sxryzofrr',     // Matthew Taylor
-  'andreat': 'nnyykosz-ry9g-qrjp-xjjj-rw5tsazapgss'       // Andrea Thomas
-}
+// Customer ID mappings are now loaded from GitHub JSON file
+// Edit customer-mappings.json and commit to update mappings across all projects
 
 interface InteractionData {
   Experience_Views_L7D: number
@@ -93,6 +40,7 @@ export function WebsiteInteractions() {
   const [refreshCount, setRefreshCount] = useState(0)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [isAutoRefreshEnabled, setIsAutoRefreshEnabled] = useState(true)
+  const [currentAmperityId, setCurrentAmperityId] = useState<string | null>(null)
   const searchParams = useSearchParams()
 
   const fetchInteractionData = async (isManual = false) => {
@@ -110,9 +58,15 @@ export function WebsiteInteractions() {
       let actualCustomerId = customerId
       
       // Map friendly ID to Amperity ID if provided
-      if (friendlyId && CUSTOMER_ID_MAPPING[friendlyId]) {
-        actualCustomerId = CUSTOMER_ID_MAPPING[friendlyId]
-        apiUrl += `?customerId=${encodeURIComponent(actualCustomerId)}`
+      if (friendlyId) {
+        const mappedId = await customerMappingService.getMapping(friendlyId)
+        if (mappedId) {
+          actualCustomerId = mappedId
+          setCurrentAmperityId(mappedId)
+          apiUrl += `?customerId=${encodeURIComponent(actualCustomerId)}`
+        } else {
+          throw new Error(`No mapping found for friendly ID: ${friendlyId}`)
+        }
       } else if (customerId) {
         apiUrl += `?customerId=${encodeURIComponent(customerId)}`
       } else if (email) {
@@ -324,9 +278,9 @@ export function WebsiteInteractions() {
             <Badge variant="secondary" className="text-xs">
               From Amperity {error && "(Fallback)"}
             </Badge>
-            {friendlyId && CUSTOMER_ID_MAPPING[friendlyId] && (
+            {friendlyId && currentAmperityId && (
               <Badge variant="outline" className="text-xs">
-                ID: {friendlyId} → {CUSTOMER_ID_MAPPING[friendlyId].slice(0, 8)}...
+                ID: {friendlyId} → {currentAmperityId.slice(0, 8)}...
               </Badge>
             )}
             {customerId && !friendlyId && (
