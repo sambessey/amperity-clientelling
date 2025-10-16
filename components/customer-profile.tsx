@@ -246,7 +246,6 @@ export function CustomerProfile() {
               )}
             </div>
             <p className="text-sm text-muted-foreground">
-              {customer.gender === 'F' ? 'Female' : customer.gender === 'M' ? 'Male' : 'Unknown'} • Age {age} •
               {customer.one_and_done ? ' One-time buyer' : ' Repeat customer'}
             </p>
           </div>
@@ -344,7 +343,7 @@ export function CustomerProfile() {
               <div>
                 <p className="text-sm text-muted-foreground">Preferred Channel</p>
                 <p className="text-sm font-medium capitalize">
-                  {customer.lifetime_preferred_purchase_channel || 'Unknown'}
+                  {customer.lifetime_preferred_purchase_channel || 'Web'}
                 </p>
               </div>
             </div>
@@ -356,7 +355,7 @@ export function CustomerProfile() {
               <div>
                 <p className="text-sm text-muted-foreground">Preferred Brand</p>
                 <p className="text-sm font-medium">
-                  {customer.lifetime_preferred_purchase_brand || 'Unknown'}
+                  {customer.lifetime_preferred_purchase_brand || 'Curated Yarra'}
                 </p>
               </div>
             </div>

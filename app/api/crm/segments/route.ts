@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 
   try {
     // Use the dynamic customer ID for segments lookup
-    const collectionId = 'apc-5VqU3c41' // This could also be dynamic in production
+    const collectionId = 'apc-mSgLnRKd' // This could also be dynamic in production
     
     // Build the Amperity segments URL
     const amperityUrl = `${AMPERITY_CONFIG.baseUrl}/profiles/${collectionId}/${customerId}/segments`

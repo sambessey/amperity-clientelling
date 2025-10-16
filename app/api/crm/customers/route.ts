@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
 
   try {
     // Use the dynamic customer ID from the request, with fallback for demo
-    const collectionId = 'apc-5VqU3c41' // This could also be dynamic in production
+    const collectionId = 'apc-mSgLnRKd' // This could also be dynamic in production
     
     // Determine which profile ID to use
     let profileIdToUse = null
@@ -138,7 +138,7 @@ function getFallbackDemoData() {
       gender: "F",
       email: "sambessxey@gmail.com",
       given_name: "Tina",
-      lifetime_preferred_purchase_brand: "TrendyBear",
+      lifetime_preferred_purchase_brand: "Curated Yarra",
       lifetime_average_order_value: 201.04,
       first_order_datetime: "2017-11-27T00:00:00Z",
       postal: "46581",
@@ -242,13 +242,24 @@ function transformAmperityCustomerData(amperityResponse: any) {
     // Amperity-specific enriched data - Keep original field names
     orderFrequency: customerData.lifetime_order_frequency,
     lifetime_order_frequency: customerData.lifetime_order_frequency,
-    experienceViewsL7D: customerData.Experience_Views_L7D,
-    Experience_Views_L7D: customerData.Experience_Views_L7D,
+    
+    // Real-time digital engagement attributes
+    Experience_Views_Count_L7D: customerData.Experience_Views_Count_L7D,
+    Experience_Views_Count_L1D: customerData.Experience_Views_Count_L1D, 
+    Experience_Views_Count_L1H: customerData.Experience_Views_Count_L1H,
+    Was_Category_Viewed_Today: customerData.Was_Category_Viewed_Today || [],
+    Was_Viewed_In_Last_Hour: customerData.Was_Viewed_In_Last_Hour || [],
+    Current_Preferred_Product_Category: customerData.Current_Preferred_Product_Category,
+    
+    // Legacy experience views fields for compatibility
+    experienceViewsL7D: customerData.Experience_Views_Count_L7D,
+    Experience_Views_L7D: customerData.Experience_Views_Count_L7D,
+    
+    // Product preferences
     preferredProductType: customerData.Preferred_Product_Type,
     Preferred_Product_Type: customerData.Preferred_Product_Type,
     preferredProductCategory: customerData.Preferred_Product_Category,
     Preferred_Product_Category: customerData.Preferred_Product_Category,
-    Current_Preferred_Product_Category: customerData.Current_Preferred_Product_Category,
     mostVisitedCategoryL7D: customerData.Most_Visited_Experience_Cat_L7D,
     Most_Visited_Experience_Cat_L7D: customerData.Most_Visited_Experience_Cat_L7D,
     preferredPurchaseChannel: customerData.lifetime_preferred_purchase_channel,

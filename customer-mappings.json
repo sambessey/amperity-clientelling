@@ -43,10 +43,11 @@
 "belindal9":"02101ee2-ca86-34e2-a1c7-87fc81f37ac5",
 "belindal10":"0213c9f1-6954-36c5-8058-e0e51cc27abc",
 "belindal11":"02180279-9b28-3279-8d13-66a20b504401",
-"janem":"023ba6a1-fec4-3af2-97df-07443a4b3678"
+"janem":"023ba6a1-fec4-3af2-97df-07443a4b3678",
+"bel3":"0177ac49-e801-340c-99aa-6ce9a159ce22"
   },
   "metadata": {
-    "total_customers": 47,
+    "total_customers": 48,
     "last_updated": "2025-10-15T15:30:00Z",
     "updated_by": "sbessey@amperity.com",
     "description": "Customer friendly ID to Amperity ID mappings for clientelling applications"

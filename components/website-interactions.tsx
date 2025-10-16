@@ -13,14 +13,21 @@ import { customerMappingService } from "@/lib/customer-mapping-service"
 // Edit customer-mappings.json and commit to update mappings across all projects
 
 interface InteractionData {
-  Experience_Views_L7D: number
+  // Real-time digital engagement attributes
+  Experience_Views_Count_L7D: number
+  Experience_Views_Count_L1D: number
+  Experience_Views_Count_L1H: number
   Current_Preferred_Product_Category: string
+  Was_Category_Viewed_Today: string[]
+  Was_Viewed_In_Last_Hour: string[]
+  
+  // Lifetime attributes
   lifetime_preferred_purchase_channel: string
   Preferred_Product_Category: string
   Preferred_Product_Type: string
   lifetime_order_frequency: number
   lifetime_average_order_value: number
-  latest_order_datetime: string
+  latest_order_datetime: string 
 }
 
 interface Segment {
@@ -65,7 +72,11 @@ export function WebsiteInteractions() {
           setCurrentAmperityId(mappedId)
           apiUrl += `?customerId=${encodeURIComponent(actualCustomerId)}`
         } else {
-          throw new Error(`No mapping found for friendly ID: ${friendlyId}`)
+          // If no mapping found, try using the friendly ID directly as a potential Amperity ID
+          console.log(`⚠️ No mapping found for friendly ID: ${friendlyId}, trying as direct ID`)
+          actualCustomerId = friendlyId
+          setCurrentAmperityId(friendlyId)
+          apiUrl += `?customerId=${encodeURIComponent(actualCustomerId)}`
         }
       } else if (customerId) {
         apiUrl += `?customerId=${encodeURIComponent(customerId)}`
@@ -91,8 +102,15 @@ export function WebsiteInteractions() {
       
       if (customerData.success && customerData.customer) {
         const newInteractionData = {
-          Experience_Views_L7D: customerData.customer.experienceViewsL7D || customerData.customer.Experience_Views_L7D || 0,
+          // Real-time digital engagement attributes
+          Experience_Views_Count_L7D: customerData.customer.Experience_Views_Count_L7D || 0,
+          Experience_Views_Count_L1D: customerData.customer.Experience_Views_Count_L1D || 0,
+          Experience_Views_Count_L1H: customerData.customer.Experience_Views_Count_L1H || 0,
           Current_Preferred_Product_Category: customerData.customer.Current_Preferred_Product_Category || "Wellness",
+          Was_Category_Viewed_Today: customerData.customer.Was_Category_Viewed_Today || [],
+          Was_Viewed_In_Last_Hour: customerData.customer.Was_Viewed_In_Last_Hour || [],
+          
+          // Lifetime attributes
           lifetime_preferred_purchase_channel: customerData.customer.preferredPurchaseChannel || customerData.customer.lifetime_preferred_purchase_channel || "web",
           Preferred_Product_Category: customerData.customer.preferredProductCategory || customerData.customer.Preferred_Product_Category || "Wellness",
           Preferred_Product_Type: customerData.customer.preferredProductType || customerData.customer.Preferred_Product_Type || "Spa",
@@ -168,8 +186,15 @@ export function WebsiteInteractions() {
       
       // Fallback to static data for demo
       setInteractionData({
-        Experience_Views_L7D: 0,
+        // Real-time digital engagement attributes
+        Experience_Views_Count_L7D: 0,
+        Experience_Views_Count_L1D: 0,
+        Experience_Views_Count_L1H: 0,
         Current_Preferred_Product_Category: "None",
+        Was_Category_Viewed_Today: [],
+        Was_Viewed_In_Last_Hour: [],
+        
+        // Lifetime attributes
         lifetime_preferred_purchase_channel: "web",
         Preferred_Product_Category: "None",
         Preferred_Product_Type: "None",
@@ -335,18 +360,57 @@ export function WebsiteInteractions() {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {/* Summary Stats from Amperity */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-4 border-b border-border">
-            <div className={`text-center p-4 bg-muted/50 rounded-lg transition-all duration-300 ${changedFields.has('Experience_Views_L7D') ? 'pulse-change' : ''}`}>
+          {/* Real-Time Digital Engagement Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pb-4 border-b border-border">
+            <div className={`text-center p-4 bg-muted/50 rounded-lg transition-all duration-300 ${changedFields.has('Experience_Views_Count_L7D') ? 'pulse-change' : ''}`}>
               <Eye className="h-5 w-5 text-primary mx-auto mb-2" />
-              <p className="text-2xl font-light text-foreground">{interactionData.Experience_Views_L7D}</p>
+              <p className="text-2xl font-light text-foreground">{interactionData.Experience_Views_Count_L7D}</p>
               <p className="text-xs text-muted-foreground">Views (7 days)</p>
             </div>
-            <div className={`text-center p-4 bg-muted/50 rounded-lg transition-all duration-300 ${changedFields.has('Current_Preferred_Product_Category') ? 'pulse-change' : ''}`}>
-              <Heart className="h-5 w-5 text-primary mx-auto mb-2" />
-              <p className="text-lg font-light text-foreground">{interactionData.Current_Preferred_Product_Category}</p>
-              <p className="text-xs text-muted-foreground">Current Category</p>
+            <div className={`text-center p-4 bg-muted/50 rounded-lg transition-all duration-300 ${changedFields.has('Experience_Views_Count_L1D') ? 'pulse-change' : ''}`}>
+              <Calendar className="h-5 w-5 text-primary mx-auto mb-2" />
+              <p className="text-2xl font-light text-foreground">{interactionData.Experience_Views_Count_L1D}</p>
+              <p className="text-xs text-muted-foreground">Views (today)</p>
             </div>
+            <div className={`text-center p-4 bg-muted/50 rounded-lg transition-all duration-300 ${changedFields.has('Experience_Views_Count_L1H') ? 'pulse-change' : ''}`}>
+              <Clock className="h-5 w-5 text-primary mx-auto mb-2" />
+              <p className="text-2xl font-light text-foreground">{interactionData.Experience_Views_Count_L1H}</p>
+              <p className="text-xs text-muted-foreground">Views (last hour)</p>
+            </div>
+          </div>
+
+          {/* Current Engagement Context */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4 border-b border-border">
+            <div className={`flex items-start gap-3 p-4 bg-muted/50 rounded-lg transition-all duration-300 ${changedFields.has('Current_Preferred_Product_Category') ? 'pulse-change' : ''}`}>
+              <Heart className="h-5 w-5 text-primary mt-1" />
+              <div>
+                <p className="text-sm text-muted-foreground">Current Interest</p>
+                <p className="text-lg font-medium text-foreground">{interactionData.Current_Preferred_Product_Category}</p>
+                <p className="text-xs text-muted-foreground">Active category preference</p>
+              </div>
+            </div>
+            <div className={`flex items-start gap-3 p-4 bg-muted/50 rounded-lg transition-all duration-300 ${changedFields.has('Was_Category_Viewed_Today') ? 'pulse-change' : ''}`}>
+              <MousePointer className="h-5 w-5 text-primary mt-1" />
+              <div>
+                <p className="text-sm text-muted-foreground">Viewed Today</p>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {interactionData.Was_Category_Viewed_Today.length > 0 ? (
+                    interactionData.Was_Category_Viewed_Today.map((category, index) => (
+                      <Badge key={index} variant="secondary" className="text-xs">
+                        {category}
+                      </Badge>
+                    ))
+                  ) : (
+                    <span className="text-sm text-muted-foreground">No activity</span>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Categories browsed today</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Lifetime Summary Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-2 gap-4 pb-4 border-b border-border">
             <div className={`text-center p-4 bg-muted/50 rounded-lg transition-all duration-300 ${changedFields.has('lifetime_order_frequency') ? 'pulse-change' : ''}`}>
               <ShoppingCart className="h-5 w-5 text-primary mx-auto mb-2" />
               <p className="text-2xl font-light text-foreground">{interactionData.lifetime_order_frequency}</p>
@@ -384,10 +448,10 @@ export function WebsiteInteractions() {
             </div>
           </div>
 
-          {/* Recent Engagement Activity */}
+          {/* Real-Time Activity Insights */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-foreground">Recent Activity Insights</h3>
+              <h3 className="text-sm font-medium text-foreground">Real-Time Activity Insights</h3>
               <Badge variant="outline" className="text-xs">
                 {isRefreshing ? 'Updating...' : 
                  !isAutoRefreshEnabled ? 'Auto-refresh paused' :
@@ -395,25 +459,46 @@ export function WebsiteInteractions() {
               </Badge>
             </div>
 
-            <div className="flex items-start gap-3 p-3 bg-primary/5 border border-primary/20 rounded-lg">
-              <div className="w-2 h-2 bg-primary rounded-full mt-2" />
-              <div className="flex-1">
-                <p className="text-sm text-foreground font-medium">High Recent Engagement</p>
-                <p className="text-sm text-muted-foreground">
-                  {interactionData.Experience_Views_L7D} page views in the last 7 days - above average activity
-                </p>
-                <p className="text-xs text-muted-foreground">Real-time from Amperity CDP</p>
+            {/* Recent Hour Activity */}
+            {interactionData.Experience_Views_Count_L1H > 0 && (
+              <div className="flex items-start gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <div className="w-2 h-2 bg-red-500 rounded-full mt-2 animate-pulse" />
+                <div className="flex-1">
+                  <p className="text-sm text-foreground font-medium">Active Right Now</p>
+                  <p className="text-sm text-muted-foreground">
+                    {interactionData.Experience_Views_Count_L1H} page views in the last hour
+                    {interactionData.Was_Viewed_In_Last_Hour.length > 0 && (
+                      <span> • Viewing: {interactionData.Was_Viewed_In_Last_Hour.join(', ')}</span>
+                    )}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Real-time engagement detected</p>
+                </div>
               </div>
-            </div>
+            )}
 
+            {/* Today's Activity */}
+            {interactionData.Experience_Views_Count_L1D > 0 && (
+              <div className="flex items-start gap-3 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+                <div className="w-2 h-2 bg-primary rounded-full mt-2" />
+                <div className="flex-1">
+                  <p className="text-sm text-foreground font-medium">Today's Engagement</p>
+                  <p className="text-sm text-muted-foreground">
+                    {interactionData.Experience_Views_Count_L1D} page views today • Current interest: {interactionData.Current_Preferred_Product_Category}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Daily activity from Amperity CDP</p>
+                </div>
+              </div>
+            )}
+
+            {/* Weekly Pattern */}
             <div className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
-              <div className="w-2 h-2 bg-orange-500 rounded-full mt-2" />
+              <div className="w-2 h-2 bg-blue-500 rounded-full mt-2" />
               <div className="flex-1">
-                <p className="text-sm text-foreground">Current Focus: {interactionData.Current_Preferred_Product_Category}</p>
+                <p className="text-sm text-foreground">Weekly Engagement Pattern</p>
                 <p className="text-sm text-muted-foreground">
-                  Current preferred product category
+                  {interactionData.Experience_Views_Count_L7D} views in 7 days - High engagement
                 </p>
-                <p className="text-xs text-muted-foreground">From Amperity CDP</p>
+                <p className="text-xs text-muted-foreground">Behavioral insight</p>
               </div>
             </div>
 
@@ -459,7 +544,7 @@ export function WebsiteInteractions() {
                   <span className="text-sm font-medium">Recent Activity</span>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {interactionData.Experience_Views_L7D} views in 7 days - High engagement
+                  {interactionData.Experience_Views_Count_L7D} views in 7 days - High engagement
                 </p>
               </div>
             </div>

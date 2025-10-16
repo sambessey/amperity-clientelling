@@ -26,11 +26,11 @@ class CustomerMappingService {
   private readonly API_URL = '/api/customer-mappings'
   private readonly CACHE_DURATION_MS = 5 * 60 * 1000 // 5 minutes
   private readonly FALLBACK_MAPPINGS: Record<string, string> = {
-    // Fallback mappings in case GitHub is unreachable
-    'martinh': '00cf575b-4b03-34c1-acfe-49c6f5cbeb25',
-    'sarahj': '05483448-a958-3335-b521-aea5f3a82f3a',
-    'lisac': '05219129-6927-3734-a67c-c63c0642d429',
-    'miket': '0551df4d-a090-3d6e-b22d-83683d8ba6ff'
+    // Fallback mappings in case API is unreachable
+    'martinh': '001c3f4a-e410-3bc3-a7ab-4728da92bef9',
+    'samb': '016cdf10-6c03-34d9-abab-8417f5dede4f',
+    'deenac': '000399dd-317a-391e-ab8b-621c4ca8e144',
+    'jasonr': '0024118a-7911-340b-94d2-1a2aa4a362ba'
   }
 
   /**
