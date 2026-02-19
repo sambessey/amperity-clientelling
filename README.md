@@ -2,10 +2,17 @@
 
 # Sam- Generated Intro
 
-Clientelling end-to-end demo for my SE friends at Amperity!
-Demonstrates how we weave a story across customer experience (Website), and CRM (Service/ Sales/Clienteling), with Amperity's latest and greatest capabilities across Customer 360 and Profiles as the backbone.
-This was originally developed to leverage LWC (Lightning Web Components) in Sales/ Service Cloud within Contact objects and use Salesforce/ Amperity APIs to hydrate custom fields, but is extensible enough to be used for other CRMs and use cases with some minor adjustments.
+For my SE friends: A generic retail clienteling application that gives customer service reps a real-time, 360-degree view of customers by integrating with Amperity CDP (Customer Data Platform). This uses elements of Amperity's real time profiles to hydrate and proliferate customer data for Sales/ Service/ CRM assisted use cases.        
+                                                                                                 
+  Tech Stack                                                                                     
 
+  - Next.js 15 (App Router) + React + TypeScript                                              
+  - Tailwind CSS + Radix UI component library                                                    
+  - Amperity CDP API for real customer data                                                      
+  - OpenAI API for AI chat assistant (partially implemented 😬)
+  - Hosted/deployed on Vercel
+
+  ---
 # How To Use
 
 Here is a Claude- generated MD on how to use this project:
